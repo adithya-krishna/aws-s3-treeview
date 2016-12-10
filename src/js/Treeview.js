@@ -9,6 +9,12 @@ class TreeView extends Component {
         this.nodeClick = this.nodeClick.bind(this);
     }
 
+    /**
+     * loadNodes - used to decorate the response from the S3 API for the tree view
+     * attaches state and children variables for a node
+     * state - indicates the state of the current node (expanded, collapsed or expanding). initialized to collapsed
+     * children - holds the children of a node. initialized to null.
+     */
     loadNodes(parent){
         const {getAsyncNodes} = this.props;
         if( !getAsyncNodes ) return false;
@@ -21,6 +27,10 @@ class TreeView extends Component {
         })
     }
 
+    /**
+     * resolveIcon - generates appropriate icons that are displayed along with node
+     * displays file icon for files and folder icons for the folders
+     */
     resolveIcon(node) {
         let iconNode;
 
@@ -35,6 +45,9 @@ class TreeView extends Component {
         return iconNode;
     }
 
+    /**
+     * createNodeRow - generates the current node being rendered
+     */
     createNodeRow(node, level, key) {
         const { indent } = this.props;
 
@@ -50,19 +63,26 @@ class TreeView extends Component {
         );
     }
 
+    /**
+     * createNodesView - used to generate the tree view shown in the render method
+     * the function mountList is recursive and generates all the nodes including children for a node
+     * nodeList - is the list that is currently rendered
+     * level - is the current level of the node
+     * parentKey - is used to track the key of the node used to describe the current node
+     */
     createNodesView(){
         // recursive function to create the expanded tree in a list
-        const mountList = (nodeList, level, parentkey) => {
+        const mountList = (nodeList, level, parentKey) => {
             let count = 0;
             const displayedList = [];
 
             // is the root being rendered
-            if (!parentkey && this.props.title) {
+            if (!parentKey && this.props.title) {
                 displayedList.push(this.props.title);
             }
 
             forEach(nodeList, node => {
-                const key = (parentkey ? parentkey + '.' : '') + count;
+                const key = (parentKey ? parentKey + '.' : '') + count;
                 const row = this.createNodeRow(node, level, key);
 
                 displayedList.push(row);
@@ -77,6 +97,11 @@ class TreeView extends Component {
         return mountList(this.state.root, 0, false);
     }
 
+    /**
+     * nodeClick - checks the node that is being clicked and expands or collapses accordingly
+     * the state variable in a node determines the expanded or collapsed state
+     * if a file is clicked it opens the file in a new tab
+     */
     nodeClick(evt) {
         const key = evt.currentTarget.getAttribute('data-item');
         let currentActiveNodes = this.state.root;
@@ -87,6 +112,7 @@ class TreeView extends Component {
             currentActiveNodes = node.children;
         });
 
+        // if a file is clicked, calls the getObject method to open the file
         if( !node.item.isFolder ){
             this.props.getObject(node.item.key);
         }
@@ -98,6 +124,10 @@ class TreeView extends Component {
         }
     }
 
+    /**
+     * expandNode - expands the current node
+     * for asynchronous calls, attaches an expanding state which is used for displaying a loading spinner
+     */
     expandNode(node) {
         // children are not loaded ?
         if (!node.children) {
@@ -120,6 +150,12 @@ class TreeView extends Component {
         }
     }
 
+    /**
+     * collapseNode - collapses the current node
+     * it resets the children within a node
+     * this is done so that subsequent calls to the same node will refresh with new data from the API
+     * If this is not done, the previous children can be displayed
+     */
     collapseNode(node) {
         node.state = 'collapsed';
         //this is done to to check if data changes in folders. If this is not done, any update on the server will not reflect till the page is refreshed.
@@ -127,7 +163,6 @@ class TreeView extends Component {
 
         this.forceUpdate();
     }
-
 
     render() {
         const root = this.state ? this.state.root : null;
