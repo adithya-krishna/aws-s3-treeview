@@ -22,7 +22,6 @@
   "dependencies": {
     "aws-sdk": "^2.7.13",
     "react": "^0.14.3",
-    "react-addons-css-transition-group": "^0.14.3",
     "font-awesome": "^4.5.0",
     "font-awesome-webpack": "0.0.4",
     "react-dom": "^0.14.3",
